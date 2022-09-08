@@ -1,4 +1,5 @@
 from django.http import Http404
+from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import JSONParser
 
 from rest_framework.response import Response
@@ -7,16 +8,23 @@ from .models import Product, Category
 from rest_framework.views import APIView
 from .serializers import ProductSerializer, CategorySerializer
 from rest_framework import permissions, status
+from account.permissions import IsOwnerOrReadOnly, is_vendor
 
 
 class ProductListApiView(APIView):
-       def get(self,  request):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get(self,  request):
         products = Product.objects.all()
         serializers = ProductSerializer(products, many=True)
         return Response(serializers.data)
 
 
+
+
+
 class ProductCreateApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated,is_vendor]
 
     def post(self, request):
         serializers = ProductSerializer(data=request.data)
