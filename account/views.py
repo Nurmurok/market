@@ -12,7 +12,7 @@ from .serializers import MyTokenObtainPairSerializer
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer
 from .permissions import AnonPermissionOnly
-from .serializers import UserSerializers
+from .serializers import UserSerializers, AccountSerializer
 from rest_framework import permissions
 from rest_framework.generics import (
     ListAPIView,

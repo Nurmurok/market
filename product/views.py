@@ -8,11 +8,11 @@ from .models import Product, Category
 from rest_framework.views import APIView
 from .serializers import ProductSerializer, CategorySerializer
 from rest_framework import permissions, status
-from account.permissions import IsOwnerOrReadOnly, is_vendor
+from account.permissions import IsOwnerOrReadOnly, AnonPermissionOnly, IsVendor
 
 
 class ProductListApiView(APIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsVendor]
 
     def get(self,  request):
         products = Product.objects.all()
@@ -20,11 +20,8 @@ class ProductListApiView(APIView):
         return Response(serializers.data)
 
 
-
-
-
 class ProductCreateApiView(APIView):
-    permission_classes = [permissions.IsAuthenticated,is_vendor]
+    permission_classes = [IsVendor]
 
     def post(self, request):
         serializers = ProductSerializer(data=request.data)
@@ -35,6 +32,7 @@ class ProductCreateApiView(APIView):
 
 
 class ProductDetailApiView(APIView):
+    permission_classes = [IsVendor]
 
     def get_object(self, id):
         try:
@@ -51,6 +49,7 @@ class ProductDetailApiView(APIView):
 
 
 class ProductUpdateApiView(APIView):
+    permission_classes = [IsVendor]
 
     def get_object(self, id):
         try:
@@ -68,7 +67,7 @@ class ProductUpdateApiView(APIView):
 
 
 class ProductDestroyApiView(APIView):
-
+    permission_classes = [permissions.IsAuthenticated, IsVendor]
     def get_object(self, id):
         try:
             return Product.objects.get(id=id)
@@ -85,6 +84,8 @@ class ProductDestroyApiView(APIView):
 
 
 class CategoryListApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request):
         products = Category.objects.all()
         serializers = CategorySerializer(products, many=True)
@@ -93,6 +94,7 @@ class CategoryListApiView(APIView):
 
 
 class CategoryCreateApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         serializers = CategorySerializer(data=request.data)
@@ -105,7 +107,8 @@ class CategoryCreateApiView(APIView):
 
 
 class CategoryDetailApiView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+
     parser_classes = [JSONParser]
 
     def get_object(self, name):

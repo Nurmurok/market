@@ -3,8 +3,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
-
-
+from .models import Account
+from .permissions import IsVendor
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -13,6 +13,11 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         return token
 
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['user', 'isVendor']
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -20,20 +25,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
     password = serializers.CharField(
-        write_only=True,
         required=True,
+        write_only=True,
         validators=[validate_password]
     )
     password2 = serializers.CharField(
         write_only=True,
         required=True,
     )
-
-    # VENDOR = serializers.CharField(default=False)
+    isVendor = serializers.ChoiceField(label="Выберите роль",
+                                   choices=((True, "Продавец"),
+                                            (False, "Покупатель")),
+                                   required=True, )
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'password2', 'email']
+        fields = ['username', 'password', 'password2', 'email', 'isVendor']
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -49,7 +56,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         user.set_password(validate_data['password'])
         user.save()
+        # account = AccountSerializer(data=user)
+        # if account.is_valid():
+        #     account.save()
         return user
+
 
 
 class UserSerializers(serializers.ModelSerializer):
